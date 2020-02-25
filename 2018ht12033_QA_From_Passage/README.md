@@ -158,5 +158,3 @@ curl -X POST http://0.0.0.0:8000/predict -H 'Content-Type: application/json' -d 
     }
 }
 ```
-#### Postman
-![postman output image](/img/postman.png)
