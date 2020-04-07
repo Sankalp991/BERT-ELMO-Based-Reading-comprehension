@@ -13,6 +13,10 @@ from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from utils import (get_answer, input_to_squad_example,
                    squad_examples_to_features, to_list)
 
+from allennlp.predictors.predictor import Predictor
+predictor = Predictor.from_path(r'model\trained_model_final.gz')
+
+
 RawResult = collections.namedtuple("RawResult",
                                    ["unique_id", "start_logits", "end_logits"])
 
@@ -35,6 +39,18 @@ class QA:
         self.model.to(self.device)
         self.model.eval()
 
+    # def predict_answer(self,passage :str,question :str):
+    #     # passage = results['passage']
+    #     # question = results['question']
+    #
+    #     result = predictor.predict(
+    #         passage=passage,
+    #         question=question
+    #     )
+    #
+    #     # best_span_str
+    #     # scp1 = {"pplcd": 6011087,"ki": "facebook","doctitle": "Cool Vendors for Connecting Digital Workplace Applications and Services","docid": "3970416","bucket": "competitor","pubdate": "17 October 2019","link": "https://www.gartner.com/document/3970416","reason": "Key Insights, Key Recommendations, SPA etc.","rank": 1}
+    #     return result["best_span_str"]
 
     def load_model(self,model_path: str,do_lower_case=False):
         config = BertConfig.from_pretrained(model_path + "/bert_config.json")

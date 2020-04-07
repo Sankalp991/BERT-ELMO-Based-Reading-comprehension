@@ -32,5 +32,3 @@ python $SQUAD_DIR/evaluate-v1.1.py $SQUAD_DIR/dev-v1.1.json ../models/wwm_uncase
 {"exact_match": 86.91579943235573, "f1": 93.1532499015869}
 ```
 
-This is the model provided as bert-large-uncased-whole-word-masking-finetuned-squad.
-

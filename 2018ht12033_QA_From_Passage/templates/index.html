@@ -1,0 +1,95 @@
+  <head>
+        <title>
+            Bits Project : NLP based Question and Answer Chatbot
+        </title>
+    </head>
+
+
+<h1 style="text-align: center;">&nbsp;<a class="navbar-brand bigbrand"><u>Bits Project : A SMART WAY OF ANSWERING QUESTIONS ABOUT A PASSAGE</u></a></h1>
+  <h4> By : Sankalp Tomar <br> Id: 2018ht12033</h4>
+
+<body style="margin: 15px;margin-left: 30px;">
+<div class="blog_posts"><form method = post enctype=multipart/form-data>
+  <div>&nbsp;<label for="doc"><b>Passage : </b></label>
+  <textarea input id="doc" class="form-control" name="passage" type="text"
+      placeholder="Enter Passage Here" rows="4" cols="50"
+             aria-describedby="doc"/>{{ passage }}</textarea></div>
+    <div>&nbsp;</div>
+  <div>&nbsp;<label for="q"><b>Question : </b></label>
+  <textarea id="q" class="form-control" name="question" type="text" placeholder="Enter Question Here" rows="2" cols="50"/>{{ question }}</textarea></div>
+
+<!--    <div><input name="test" type= "text" value="{{ question }}" /></div>-->
+<!--    <div><input name="test1" type= "text" value= {{ question }} /></div>-->
+
+  <div>&nbsp;</div>
+
+<button class="btn btn-primary" type="submit" value="submit">Submit</button>
+   <style>
+        .form-control {
+            background-color: lightyellow;
+            width: 500px;
+            border: 2px solid black;
+            padding: 5px;
+            vertical-align: middle;
+            text-align:center;
+
+            }
+            </style>
+
+   </form></div>
+
+
+
+<!--    {% if messages %}-->
+<!--<label >Answer : </label>-->
+<!--<div> <label for="answer">Answer : </label>-->
+<!--        <ul class="messages">-->
+
+<!--            <p id="answer">{{ messages }}</p>-->
+<!--&lt;!&ndash;            {% for message in messages[0] %}&ndash;&gt;-->
+<!--&lt;!&ndash;                <li> {{ message }}</li>&ndash;&gt;-->
+<!--&lt;!&ndash;            {% endfor %}&ndash;&gt;-->
+<!--            <style>-->
+<!--        .messages {-->
+<!--            background-color: lightyellow;-->
+<!--            width: 500px;-->
+<!--            border: 2px solid black;-->
+<!--            padding: 5px;-->
+
+
+<!--            }-->
+<!--            </style>-->
+<!--        </ul>-->
+<!--    </div>-->
+<!--        {% endif %}-->
+<!--<div>&nbsp;<label for="q"><b>Question : </b></label>-->
+<!--  <textarea id="q" class="form-control" name="question" type="text" placeholder="Enter Question Here"-->
+<!--            rows="2" cols="50"/>{{ question }}</textarea></div>-->
+<p>{% if messages %} </p>
+<div>
+    <label><b>Answer :</b></label>
+    <textarea class="msgs" type="text"
+      rows="2" cols="30"
+             />{{ messages }}</textarea></div>
+    <style>
+        .msgs {
+            background-color: lightgreen;
+            width: 500px;
+            border: 2px solid black;
+            padding: 5px;
+
+        vertical-align: middle;
+        text-align:center;
+    }
+
+
+            }
+            </style>
+<!--<ul class="messages">&lt;!&ndash;-->
+<!--{% for message in messages[0] %}&ndash;&gt; &lt;!&ndash;-->
+<!--<li> {{ message }}</li>&ndash;&gt; &lt;!&ndash;-->
+<!--{% endfor %}&ndash;&gt;</ul>-->
+<!--</div>-->
+<p>{% endif %}</p>
+
+</body>
