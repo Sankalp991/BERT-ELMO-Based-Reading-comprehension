@@ -1,127 +1,27 @@
 #Name : Sankalp Tomar
 #ID : 2018ht12033
 
-# BERT-SQuAD
-
-Use google BERT to do SQuAD  !
-
-
-# What is SQuAD?
-Stanford Question Answering Dataset (SQuAD) is a reading comprehension dataset, consisting of questions posed by crowdworkers on a set of Wikipedia articles, where the answer to every question is a segment of text, or span, from the corresponding reading passage, or the question might be unanswerable.
-
 # Requirements
 - python3
 - pip3 install -r requirements.txt
+- Download trained model from - https://www.dropbox.com/s/j6jnf060aovimdy/model.zip?dl=0
+and keep it in model folder
 
-# Deploy REST-API
+# Deploy Flask-API
 BERT QA model deployed as rest api
 
 ```bash
-python api.py
+python flask_api.py
 ```
-API will be live at `0.0.0.0:8000` endpoint `predict`
+API will be live at `127.0.0.1:8000` endpoint `predict`
 
-### cURL request
-```bash
-curl -X POST http://0.0.0.0:8000/predict -H 'Content-Type: application/json' -d '{ "document": "Victoria has a written constitution enacted in 1975, but based on the 1855 colonial constitution, passed by the United Kingdom Parliament as the Victoria Constitution Act 1855, which establishes the Parliament as the states law-making body for matters coming under state responsibility. The Victorian Constitution can be amended by the Parliament of Victoria, except for certain 'entrenched' provisions that require either an absolute majority in both houses, a three-fifths majority in both houses, or the approval of the Victorian people in a referendum, depending on the provision.","question":"When did Victoria enact its constitution?" }'
+### API Input 
+```
+Passage : Amitabh Bachchan was born on 11 October 1942. He is an Indian film actor, film producer, television host, occasional playback singer and former politician. He first gained popularity in the early 1970s for films such as Zanjeer, Deewaar and Sholay, and was dubbed Indias "angry young man" for his on-screen roles in Bollywood. Referred to as the Shahenshah of Bollywood, Sadi ka Mahanayak, Star of the Millennium, or Big B, he has since appeared in over 190 Indian films in a career spanning almost five decades. Bachchan is widely regarded as one of the greatest and most influential actors in the history of Indian cinema as well as world cinema. So total was his dominance on the Indian movie scene in the 1970s and 1980s that the French director François Truffaut called him a "one-man industry". Beyond the Indian subcontinent, he also has a large overseas following in markets including Africa, the Middle East, United Kingdom, Russia and parts of the United States.
+
+Question : Who is Amitabh Bachchan?
 ```
 #### Output
-```json
-{
-    "result": {
-        "answer": "1975",
-        "confidence": 0.940746070672879,
-        "document": [
-            "Victoria",
-            "has",
-            "a",
-            "written",
-            "constitution",
-            "enacted",
-            "in",
-            "1975,",
-            "but",
-            "based",
-            "on",
-            "the",
-            "1855",
-            "colonial",
-            "constitution,",
-            "passed",
-            "by",
-            "the",
-            "United",
-            "Kingdom",
-            "Parliament",
-            "as",
-            "the",
-            "Victoria",
-            "Constitution",
-            "Act",
-            "1855,",
-            "which",
-            "establishes",
-            "the",
-            "Parliament",
-            "as",
-            "the",
-            "states",
-            "law-making",
-            "body",
-            "for",
-            "matters",
-            "coming",
-            "under",
-            "state",
-            "responsibility.",
-            "The",
-            "Victorian",
-            "Constitution",
-            "can",
-            "be",
-            "amended",
-            "by",
-            "the",
-            "Parliament",
-            "of",
-            "Victoria,",
-            "except",
-            "for",
-            "certain",
-            "entrenched",
-            "provisions",
-            "that",
-            "require",
-            "either",
-            "an",
-            "absolute",
-            "majority",
-            "in",
-            "both",
-            "houses,",
-            "a",
-            "three-fifths",
-            "majority",
-            "in",
-            "both",
-            "houses,",
-            "or",
-            "the",
-            "approval",
-            "of",
-            "the",
-            "Victorian",
-            "people",
-            "in",
-            "a",
-            "referendum,",
-            "depending",
-            "on",
-            "the",
-            "provision."
-        ],
-        "end": 7,
-        "start": 7
-    }
-}
+```
+Answer : film actor, film producer, television host, occasional playback singer and former politician
 ```
