@@ -20,6 +20,7 @@ python -m torch.distributed.launch --nproc_per_node=8 ./training/run_squad.py \
     --output_dir ../model/wwm_uncased_finetuned_squad/ \
     --per_gpu_eval_batch_size=8   \
     --per_gpu_train_batch_size=8   \
+	--fp16	\
 ```
 Training with these hyper-parameters gave us the following results:
 
