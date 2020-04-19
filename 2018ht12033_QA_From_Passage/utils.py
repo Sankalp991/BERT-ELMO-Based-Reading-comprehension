@@ -5,10 +5,13 @@ import math
 
 import numpy as np
 import torch
+import bidaf as bi
 from pytorch_transformers.tokenization_bert import (BasicTokenizer,
                                                     whitespace_tokenize)
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 
+from allennlp.predictors.predictor import Predictor
+predictor = Predictor.from_path(r'model\trained_model_final.gz')
 
 class SquadExample(object):
     """
@@ -116,22 +119,6 @@ def input_to_squad_example(passage, question):
 def _check_is_max_context(doc_spans, cur_span_index, position):
     """Check if this is the 'max context' doc span for the token."""
 
-    # Because of the sliding window approach taken to scoring documents, a single
-    # token can appear in multiple documents. E.g.
-    #  Doc: the man went to the store and bought a gallon of milk
-    #  Span A: the man went to the
-    #  Span B: to the store and bought
-    #  Span C: and bought a gallon of
-    #  ...
-    #
-    # Now the word 'bought' will have two scores from spans B and C. We only
-    # want to consider the score with "maximum context", which we define as
-    # the *minimum* of its left and right context (the *sum* of left and
-    # right context will always be the same, of course).
-    #
-    # In the example the maximum context for 'bought' would be span C since
-    # it has 1 left context and 3 right context, while span B has 4 left context
-    # and 0 right context.
     best_score = None
     best_span_index = None
     for (span_index, doc_span) in enumerate(doc_spans):
@@ -158,14 +145,10 @@ def squad_examples_to_features(example, tokenizer, max_seq_length,
     """Loads a data file into a list of `InputBatch`s."""
 
     unique_id = 1000000000
-    # cnt_pos, cnt_neg = 0, 0
-    # max_N, max_M = 1024, 1024
-    # f = np.zeros((max_N, max_M), dtype=np.float32)
+
     example_index = 0
     features = []
-    # if example_index % 100 == 0:
-    #     logger.info('Converting %s/%s pos %s neg %s', example_index, len(examples), cnt_pos, cnt_neg)
-
+    
     query_tokens = tokenizer.tokenize(example.question_text)
 
     if len(query_tokens) > max_query_length:
@@ -297,30 +280,6 @@ RawResult = collections.namedtuple("RawResult",["unique_id", "start_logits", "en
 def get_final_text(pred_text, orig_text, do_lower_case, verbose_logging=False):
     """Project the tokenized prediction back to the original text."""
 
-    # When we created the data, we kept track of the alignment between original
-    # (whitespace tokenized) tokens and our WordPiece tokenized tokens. So
-    # now `orig_text` contains the span of our original text corresponding to the
-    # span that we predicted.
-    #
-    # However, `orig_text` may contain extra characters that we don't want in
-    # our prediction.
-    #
-    # For example, let's say:
-    #   pred_text = steve smith
-    #   orig_text = Steve Smith's
-    #
-    # We don't want to return `orig_text` because it contains the extra "'s".
-    #
-    # We don't want to return `pred_text` because it's already been normalized
-    # (the SQuAD eval script also does punctuation stripping/lower casing but
-    # our tokenizer does additional normalization like stripping accent
-    # characters).
-    #
-    # What we really want to return is "Steve Smith".
-    #
-    # Therefore, we have to apply a semi-complicated alignment heuristic between
-    # `pred_text` and `orig_text` to get a character-to-character alignment. This
-    # can fail in certain cases in which case we just return `orig_text`.
 
     def _strip_spaces(text):
         ns_chars = []
@@ -401,8 +360,8 @@ def _compute_softmax(scores):
         probs.append(score / total_sum)
     return probs
 
-def get_answer(example, features, all_results, n_best_size,
-                max_answer_length, do_lower_case):
+def get_answer(example, features, all_results,passage,question, n_best_size,
+                max_answer_length, do_lower_case,process):
     example_index_to_features = collections.defaultdict(list)
     for feature in features:
         example_index_to_features[feature.example_index].append(feature)
@@ -453,62 +412,68 @@ def get_answer(example, features, all_results, n_best_size,
     _NbestPrediction = collections.namedtuple("NbestPrediction",
                         ["text", "start_logit", "end_logit","start_index","end_index"])
     seen_predictions = {}
-    nbest = []
-    for pred in prelim_predictions:
-        if len(nbest) >= n_best_size:
-            break
-        feature = features[pred.feature_index]
-        orig_doc_start = -1
-        orig_doc_end = -1
-        if pred.start_index > 0:  # this is a non-null prediction
-            tok_tokens = feature.tokens[pred.start_index:(pred.end_index + 1)]
-            orig_doc_start = feature.token_to_orig_map[pred.start_index]
-            orig_doc_end = feature.token_to_orig_map[pred.end_index]
-            orig_tokens = example.doc_tokens[orig_doc_start:(orig_doc_end + 1)]
-            tok_text = " ".join(tok_tokens)
 
-            # De-tokenize WordPieces that have been split off.
-            tok_text = tok_text.replace(" ##", "")
-            tok_text = tok_text.replace("##", "")
+    if process:
+        result = predictor.predict(passage=passage, question=question)
+        return result
+    else:
+        nbest = []
+        for pred in prelim_predictions:
+            if len(nbest) >= n_best_size:
+                break
+            feature = features[pred.feature_index]
+            orig_doc_start = -1
+            orig_doc_end = -1
+            if pred.start_index > 0:  # this is a non-null prediction
+                tok_tokens = feature.tokens[pred.start_index:(pred.end_index + 1)]
+                orig_doc_start = feature.token_to_orig_map[pred.start_index]
+                orig_doc_end = feature.token_to_orig_map[pred.end_index]
+                orig_tokens = example.doc_tokens[orig_doc_start:(orig_doc_end + 1)]
+                tok_text = " ".join(tok_tokens)
 
-            # Clean whitespace
-            tok_text = tok_text.strip()
-            tok_text = " ".join(tok_text.split())
-            orig_text = " ".join(orig_tokens)
+                # De-tokenize WordPieces that have been split off.
+                tok_text = tok_text.replace(" ##", "")
+                tok_text = tok_text.replace("##", "")
 
-            final_text = get_final_text(tok_text, orig_text,do_lower_case)
-            if final_text in seen_predictions:
-                continue
+                # Clean whitespace
+                tok_text = tok_text.strip()
+                tok_text = " ".join(tok_text.split())
+                orig_text = " ".join(orig_tokens)
 
-            seen_predictions[final_text] = True
-        else:
-            final_text = ""
-            seen_predictions[final_text] = True
+                final_text = get_final_text(tok_text, orig_text,do_lower_case)
+                if final_text in seen_predictions:
+                    continue
 
-        nbest.append(
-            _NbestPrediction(
-                text=final_text,
-                start_logit=pred.start_logit,
-                end_logit=pred.end_logit,
-                start_index=orig_doc_start,
-                end_index=orig_doc_end))
+                seen_predictions[final_text] = True
+            else:
+                final_text = ""
+                seen_predictions[final_text] = True
 
-    if not nbest:
-        nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0,start_index=-1,
-                end_index=-1))
+            nbest.append(
+                _NbestPrediction(
+                    text=final_text,
+                    start_logit=pred.start_logit,
+                    end_logit=pred.end_logit,
+                    start_index=orig_doc_start,
+                    end_index=orig_doc_end))
 
-    assert len(nbest) >= 1
+        if not nbest:
+            nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0,start_index=-1,
+                    end_index=-1))
 
-    total_scores = []
-    for entry in nbest:
-        total_scores.append(entry.start_logit + entry.end_logit)
+        assert len(nbest) >= 1
 
-    probs = _compute_softmax(total_scores)
-    
-    answer = {"answer" : nbest[0].text,
-               "start" : nbest[0].start_index,
-               "end" : nbest[0].end_index,
-               "confidence" : probs[0],
-               "document" : example.doc_tokens
-             }
+        total_scores = []
+        for entry in nbest:
+            total_scores.append(entry.start_logit + entry.end_logit)
+
+        probs = _compute_softmax(total_scores)
+
+        answer = {"answer" : nbest[0].text,
+                   "start" : nbest[0].start_index,
+                   "end" : nbest[0].end_index,
+                   "confidence" : probs[0],
+                   "document" : example.doc_tokens
+                 }
+
     return answer
