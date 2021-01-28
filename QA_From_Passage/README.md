@@ -1,5 +1,4 @@
 #Name : Sankalp Tomar
-#ID : 2018ht12033
 
 # Requirements
 - python3
